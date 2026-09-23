@@ -36,14 +36,30 @@ A repository joins this collection when it meets all of:
 
 | Project | What it does | Peak VRAM |
 |---|---|---|
-| [interview-copilot](https://github.com/Drzymek92/interview-copilot) | Disclosed, local-first live copilot for AI-engineer interviews — local Whisper STT, Ollama reasoning, loopback dashboard | _pending_ |
-| [document-librarian](https://github.com/Drzymek92/document-librarian) | Offline document catalog for LLM agents — DuckDB, full-text search, local embeddings | **0.1 GB** <sub>(recall path)</sub> |
-| [synthetic-data-factory](https://github.com/Drzymek92/synthetic-data-factory) | YAML-defined synthetic datasets with an LLM-as-judge quality harness | _pending_ |
-| [agentic-ml-lab](https://github.com/Drzymek92/agentic-ml-lab) | Reproducible local workstation for agentic ML on Kaggle competitions | _pending_ |
+| [interview-copilot](https://github.com/Drzymek92/interview-copilot) | Disclosed, local-first live copilot for AI-engineer interviews — local Whisper STT, Ollama reasoning, loopback dashboard | **13.3 GB** <sub>STT + 14B, both resident</sub> |
+| [agentic-ml-lab](https://github.com/Drzymek92/agentic-ml-lab) | Reproducible local workstation for agentic ML on Kaggle competitions | **5.1 GB** <sub>solution-tree search step</sub> |
+| [synthetic-data-factory](https://github.com/Drzymek92/synthetic-data-factory) | YAML-defined synthetic datasets with an LLM-as-judge quality harness | **5.1 GB** <sub>generate + judge</sub> |
+| [document-librarian](https://github.com/Drzymek92/document-librarian) | Offline document catalog for LLM agents — DuckDB, full-text search, local embeddings | **0.1 GB** <sub>recall path</sub> |
 | recruiter-copilot | Interviewer-side copilot — bilingual transcription, evidence-cited post-call analysis, consent-gated | _in progress_ |
 
-Rows still marked _pending_ have not been measured yet. They stay blank rather than estimated —
-a collection whose entire claim is a VRAM ceiling does not get to guess at its own numbers.
+Every figure above is a **measured peak on the reference machine**, taken cold, with the card
+cleared first — not an estimate, and not a spec-sheet number. The heaviest project in the
+collection leaves **2.6 GB spare on a 16 GB card**; the lightest barely touches it.
+
+### Where the heaviest one spends it
+
+`interview-copilot` is the ceiling case, because it holds two models resident at once — speech
+recognition never unloads while the reasoning model answers. Measured separately:
+
+| Component | Peak VRAM |
+|---|---|
+| Reasoning model (`qwen3:14b`, 16k context) | 11.2 GB · 44.7 tok/s · 3.5 s cold start |
+| Whisper `large-v3-turbo` (float16, beam 5) | 2.2 GB |
+| **Both resident, end to end** | **13.3 GB** |
+
+That is the whole design problem of the collection in one row: an 8B model would leave 9 GB
+free, and the project chose the 14B anyway because the answers are better — spending the
+headroom deliberately rather than discovering it was gone.
 
 ### Reference measurement
 
