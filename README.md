@@ -2,7 +2,8 @@
 
 **AI that doesn't need a datacentre — or a budget.**
 Every project here runs end-to-end on **one consumer GPU — ≤16 GB VRAM**, with local models and no
-paid API in the default path.
+paid API in the default path. Where a project *can* call a hosted model, that path is optional,
+explicitly opted into, and engineered for economy — [see below](#on-outgoing-api-calls).
 
 > *Poor* refers to the hardware budget, not to anyone using it. This is a collection about what you
 > can build on the machine already under your desk.
@@ -24,6 +25,8 @@ these projects got *better* when they stopped being allowed to call a frontier A
 A repository joins this collection when it meets all of:
 
 - [x] Runs **end-to-end on one consumer GPU, ≤16 GB VRAM**, with no paid API in the default path
+- [x] Any outgoing API path is **optional, explicitly opted into, announced at startup**, and
+      cost-engineered when used
 - [x] Ships a **measured Hardware Envelope** — peak VRAM, throughput, cold start — produced by a probe, not written by hand
 - [x] Carries the `ai-for-poor-people` topic, a real description, and the VRAM badge
 - [x] Has a LICENSE, a runnable quickstart, tests and clean lint
@@ -56,6 +59,32 @@ Throughput    82.7 tok/s   ·   cold start 1.92 s
 
 An 8B model leaves **two thirds of a 16 GB card free**. That headroom is the space the projects
 in this collection actually live in.
+
+## On outgoing API calls
+
+Several projects here speak the OpenAI-compatible API. That is deliberate architecture, not a
+loophole: the same client talks to a local Ollama endpoint and to a hosted gateway, so the only
+thing separating *runs on my desk* from *runs on a rented frontier model* is one setting. Portable
+beats purist.
+
+Three rules keep it honest.
+
+**The shipped default is local.** `interview-copilot` ships `REASONING_BACKEND=local`;
+`recruiter-copilot` ships `PROFILE=local`; the rest point at `localhost:11434`. Clone any of them
+and you get a working system with no key, no account and no bill.
+
+**Going out is explicit, and it announces itself.** The cloud path is opt-in, needs its own
+environment variables, and says so at startup — an interview transcript never leaves the machine
+silently. `recruiter-copilot` goes further and *refuses to start* on `PROFILE=api` without a key
+rather than quietly degrading. A fallback you didn't ask for is an egress you didn't consent to.
+
+**When a project does call out, the call is engineered for economy.** Prompt caching on the
+reused context block, bounded and batched requests, and the cheapest model tier that clears the
+quality bar. Cost is treated as a design constraint in exactly the way VRAM is — the two halves of
+the same discipline.
+
+So the claim is not *"this code cannot reach the internet."* It is: **local by default, remote by
+choice, and cheap when you choose it.**
 
 ## How the numbers are made
 
